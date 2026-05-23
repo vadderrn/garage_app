@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+
+      - name: Setup
+        run: sh init.sh
+
+      - name: Build APK
+        run: flutter build apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+
+      - name: Setup
+        run: sh init.sh
+
+      - name: Build EXE
+        run: flutter build windows
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: exe
+          path: build/windows/runner/Release/Garage.exe
+
+  release:
+    needs: [apk, exe]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apk/app-release.apk
+            exe/Garage.exe
+          generate_release_notes: true
