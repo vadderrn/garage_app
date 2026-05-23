@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+set -e
+
+echo "=== Formatting ==="
+sh format.sh
+
+echo ""
+echo "=== Re-staging formatted files ==="
+git add --update
+
+echo "=== Analyzing ==="
+sh analyze.sh
+
+echo ""
+echo "Pre-commit checks passed."

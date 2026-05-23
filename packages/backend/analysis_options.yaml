@@ -5,3 +5,4 @@ linter:
     - unnecessary_string_escapes
     - avoid_redundant_argument_values
     - use_super_parameters
+    - use_null_aware_elements

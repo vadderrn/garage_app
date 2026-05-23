@@ -9,3 +9,4 @@ linter:
     - avoid_redundant_argument_values
     - use_super_parameters
     - sort_child_properties_last
+    - use_null_aware_elements
