@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, maximum-scale=1.0">
+    <title>Car Finance Tracker - Fullscreen UI Mockup</title>
+    <style>
+        /* GLOBAL RESET - FULL BLEED, NO BORDERS, NO IPHONE FRAME */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* MAIN APP CONTAINER - FULLSCREEN, NO ROUNDED CORNERS, NO SHADOWS, NO BORDERS */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* REMOVED: border-radius, box-shadow, iPhone bezel simulation */
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
+            position: relative;
+        }
+
+        /* REMOVED: .notch styles completely - No iPhone notch */
+        /* status bar is kept but minimal, can be customized */
+        .status-bar {
+            display: none;
+        }
+        
+        /* Custom scrollbars remain but fit full width */
+        *::-webkit-scrollbar {
+            width: 4px;
+        }
+        *::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 4px 0;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 20px;
+        }
+        
+        /* All existing functional styles preserved */
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #30d158;
+            --card-bg: #252525;
+            --card-border: #333333;
+            --border: #333333;
+            --shadow: 0 4px 16px rgba(0,0,0,0.4);
+            --expense: #ff6b6b;
+            --modal-bg: #1c1c1e;
+            --increase: #ff6b6b;
+            --decrease: #30d158;
+            --input-bg: #333333;
+            --oil-green: #30d158;
+            --oil-yellow: #ff9f0a;
+            --oil-red: #ff453a;
+        }
+
+        .light-theme {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --text-primary: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --card-bg: #ffffff;
+            --card-border: #e5e5ea;
+            --border: #d1d1d6;
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+            --modal-bg: #f5f5f7;
+            --input-bg: #e5e5ea;
+        }
+        .light-theme .progress-bar-container,
+        .light-theme .monthly-bar-container,
+        .light-theme .breakdown-bar-container { background: #e5e5ea; }
+        .light-theme .color-option { border-color: var(--border); }
+        .light-theme .color-option.selected { border-color: var(--accent); }
+        .light-theme .btn-primary { background: var(--accent); }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .app-bar {
+            padding: 8px 20px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .app-bar-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .app-bar h1 { font-size: 20px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .back-btn, .edit-btn, .settings-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-secondary); border: 1px solid var(--border); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); transition: all 0.2s; flex-shrink: 0; }
+        .back-btn:active, .edit-btn:active, .settings-btn:active { transform: scale(0.95); background: var(--border); }
+        .back-btn { display: none; } .back-btn.visible { display: flex; }
+        .edit-btn { display: none; } .edit-btn.visible { display: flex; }
+        .settings-btn.hidden { display: none; }
+        .app-bar-actions { display: flex; gap: 8px; }
+
+        .screen { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+        .screen.active { display: flex; }
+        .car-list, .works-list, .settings-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 16px 12px; }
+        .car-list { padding: 0 16px 0 16px; }
+        .works-list { padding-right: 4px; }
+        .settings-content { padding: 0 16px 12px; }
+
+        .car-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+        .car-card:active { transform: scale(0.98); border-color: var(--accent); }
+        .car-color-strip { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .car-header { display: flex; justify-content: space-between; align-items: start; margin: 3px 0 10px; }
+        .car-make-model { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+        .car-price { font-weight: 700; font-size: 16px; color: var(--accent); }
+        .car-plate { display: inline-block; background: var(--bg-secondary); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: var(--text-secondary); margin-top: 4px; border: 1px solid var(--border); }
+        .car-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .info-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 2px; }
+        .info-value { font-size: 14px; font-weight: 500; } .info-value.expense { color: var(--expense); }
+
+        .add-btn { margin: 12px 0 20px; padding: 16px; background: transparent; border: 2px dashed var(--border); border-radius: 16px; text-align: center; cursor: pointer; color: var(--text-secondary); font-weight: 600; font-size: 15px; transition: all 0.2s; flex-shrink: 0; }
+        .add-btn:active { border-color: var(--accent); color: var(--accent); background: rgba(48,209,88,0.05); }
+
+        .detail-info-bar { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); flex-shrink: 0; gap: 10px; flex-wrap: wrap; }
+        .detail-plate { background: var(--bg-primary); padding: 6px 12px; border-radius: 8px; font-size: 13px; border: 1px solid var(--border); white-space: nowrap; }
+        .detail-mileage { color: var(--text-secondary); font-size: 13px; white-space: nowrap; }
+        .detail-price { font-weight: 700; font-size: 18px; color: var(--accent); white-space: nowrap; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 20px; flex-shrink: 0; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; }
+        .stat-card.clickable { cursor: pointer; transition: all 0.2s; }
+        .stat-card.clickable:active { transform: scale(0.97); border-color: var(--accent); }
+        .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .stat-value { font-size: 20px; font-weight: 700; } .stat-value.expense { color: var(--expense); }
+        .stat-change { font-size: 11px; font-weight: 600; margin-top: 2px; }
+        .stat-change.increase { color: var(--increase); } .stat-change.decrease { color: var(--decrease); }
+        .stat-subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+        .oil-section { padding: 4px 20px 12px; }
+        .oil-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .oil-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+        .oil-percentage { font-size: 13px; font-weight: 700; }
+        .oil-percentage.good { color: var(--oil-green); } .oil-percentage.warning { color: var(--oil-yellow); } .oil-percentage.danger { color: var(--oil-red); }
+        .progress-bar-container { width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; position: relative; }
+        .progress-bar-fill.good { background: var(--oil-green); } .progress-bar-fill.warning { background: var(--oil-yellow); } .progress-bar-fill.danger { background: var(--oil-red); }
+        .progress-bar-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: shimmer 2s ease-in-out infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .oil-info { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--text-secondary); }
+
+        .detail-scrollable { flex: 1; overflow-y: auto; }
+        .works-section { padding: 0 20px; }
+        .works-header { font-size: 16px; font-weight: 600; margin-bottom: 10px; flex-shrink: 0; }
+        .work-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; }
+        .work-item:active { transform: scale(0.98); border-color: var(--accent); }
+        .work-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .work-icon.maintenance { background: rgba(48,209,88,0.15); } .work-icon.repair { background: rgba(255,159,10,0.15); }
+        .work-icon.replacement { background: rgba(255,107,107,0.15); } .work-icon.diagnostic { background: rgba(10,132,255,0.15); }
+        .work-icon.tires { background: rgba(175,82,222,0.15); } .work-icon.fuel { background: rgba(255,215,0,0.15); }
+        .work-icon.insurance { background: rgba(100,149,237,0.15); } .work-icon.cleaning { background: rgba(0,206,209,0.15); }
+        .work-icon.tax { background: rgba(139,90,43,0.15); } .work-icon.parking { background: rgba(128,128,128,0.2); }
+        .work-info { flex: 1; min-width: 0; } .work-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .work-meta { font-size: 11px; color: var(--text-secondary); }
+        .work-cost { font-weight: 600; color: var(--expense); font-size: 15px; white-space: nowrap; }
+        .btn-danger { background: var(--expense); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; flex: 1; }
+        .btn-danger:active { transform: scale(0.97); opacity: 0.85; }
+        .btn-danger-sm { background: rgba(255,255,255,0.1); color: var(--expense); border: 1px solid rgba(255,107,107,0.3); border-radius: 8px; padding: 8px 10px; font-size: 18px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; line-height: 1; }
+        .btn-danger-sm:active { background: rgba(255,255,255,0.2); }
+
+        .settings-group { margin: 16px 0; }
+        .settings-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px; padding-left: 4px; }
+        .setting-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+        .setting-item:active { border-color: var(--accent); background: rgba(48,209,88,0.05); }
+        .setting-left { display: flex; align-items: center; gap: 10px; } .setting-icon { font-size: 20px; } .setting-title { font-size: 15px; }
+        .setting-right { display: flex; align-items: center; gap: 8px; } .setting-value { color: var(--text-secondary); font-size: 14px; } .chevron { color: var(--text-secondary); }
+
+        .donate-section { margin: 20px 0; padding-top: 20px; border-top: 1px solid var(--border); }
+        .donate-header { text-align: center; margin-bottom: 16px; }
+        .donate-heart { font-size: 28px; animation: heartbeat 1.5s ease infinite; }
+        @keyframes heartbeat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.15)} 30%{transform:scale(1)} 45%{transform:scale(1.1)} 60%{transform:scale(1)} }
+        .donate-title { font-size: 16px; font-weight: 600; margin: 8px 0 4px; } .donate-subtitle { font-size: 13px; color: var(--text-secondary); }
+        .donate-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .donate-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 14px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .donate-card:active { border-color: var(--accent); transform: scale(0.95); }
+        .donate-card.featured { border-color: var(--accent); background: rgba(48,209,88,0.1); }
+        .donate-card.featured::before { content:'Popular';position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700; }
+        .donate-icon { font-size: 22px; margin-bottom: 6px; } .donate-amount { font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+        .donate-desc { font-size: 10px; color: var(--text-secondary); }
+        .donate-custom { display: flex; gap: 8px; margin-top: 12px; }
+        .donate-input { flex:1; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--text-primary); font-size:14px; outline:none; }
+        .donate-input:focus { border-color:var(--accent); }
+        .donate-btn { background:var(--accent); color:#fff; border:none; border-radius:10px; padding:12px 18px; font-size:14px; font-weight:700; cursor:pointer; }
+        .donate-methods { display:flex; justify-content:space-around; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+        .donate-method { text-align:center; cursor:pointer; color:var(--text-secondary); transition:all 0.2s; }
+        .donate-method:active { transform:scale(1.1); } .donate-method-icon { font-size:24px; } .donate-method-label { font-size:10px; margin-top:4px; }
+
+        .modal-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:200; display:none; align-items:flex-end; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:var(--modal-bg); border-radius:20px 20px 0 0; width:100%; padding:20px; max-height:85%; overflow-y:auto; animation:slideUp 0.3s ease; border-top:1px solid var(--border); }
+        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .modal h3 { font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+        .modal-option { padding:14px; border-radius:10px; cursor:pointer; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s; }
+        .modal-option:active { background:var(--bg-secondary); }
+        .modal-option.selected { background:var(--accent); color:#fff; font-weight:600; }
+        .modal-cancel { width:100%; padding:14px; margin-top:8px; background:var(--bg-secondary); border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; color:var(--text-primary); }
+
+        .form-group { margin-bottom:16px; }
+        .form-label { font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-secondary); margin-bottom:6px; display:block; }
+        .form-input { width:100%; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text-primary); font-size:15px; outline:none; transition:border-color 0.2s; }
+        .form-input:focus { border-color:var(--accent); } .form-input::placeholder { color:#666; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .form-row-60-40 { display:grid; grid-template-columns:3fr 2fr; gap:10px; }
+        .color-picker-group { display:flex; gap:8px; flex-wrap:wrap; }
+        .color-option { width:32px; height:32px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all 0.2s; }
+        .color-option:hover { transform:scale(1.15); }
+        .color-option.selected { border-color:var(--accent); box-shadow:0 0 0 2px rgba(48,209,88,0.3); }
+        .category-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+        .category-option { background:var(--bg-secondary); border:2px solid var(--border); border-radius:12px; padding:12px 8px; text-align:center; cursor:pointer; transition:all 0.2s; }
+        .category-option:active { transform:scale(0.95); }
+        .category-option.selected { border-color:var(--accent); background:rgba(48,209,88,0.1); }
+        .category-icon { font-size:22px; margin-bottom:6px; display:block; }
+        .category-name { font-size:10px; color:var(--text-secondary); font-weight:500; }
+        .category-option.selected .category-name { color:var(--accent); font-weight:600; }
+        .form-actions { display:flex; gap:10px; margin-top:20px; }
+        .btn-primary { flex:1; background:rgba(48,209,88,0.5); color:#fff; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:700; cursor:pointer; transition:all 0.2s; }
+        .btn-primary:active { transform:scale(0.97); opacity:0.9; }
+        .btn-secondary { flex:1; background:transparent; color:var(--text-primary); border:1px solid var(--border); border-radius:12px; padding:14px; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .btn-secondary:active { background:var(--bg-secondary); }
+
+        .monthly-list { display: flex; flex-direction: column; gap: 12px; }
+        .monthly-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+        .monthly-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .monthly-month { font-size: 15px; font-weight: 600; }
+        .monthly-amount { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .monthly-count { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
+        .monthly-bar-container { width: 100%; height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; }
+        .monthly-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.5s ease; }
+        .comparison-summary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; margin-top: 4px; background: var(--bg-secondary); border-radius: 10px; text-align: center; }
+        .comparison-arrow { font-size: 20px; }
+        .comparison-text { font-size: 13px; font-weight: 600; }
+        .comparison-text.increase { color: var(--increase); }
+        .comparison-text.decrease { color: var(--decrease); }
+        .breakdown-list { display: flex; flex-direction: column; gap: 12px; }
+        .breakdown-item { display: flex; align-items: center; gap: 10px; }
+        .breakdown-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+        .breakdown-info { flex: 1; min-width: 0; }
+        .breakdown-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+        .breakdown-bar-container { width: 100%; height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .breakdown-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .breakdown-right { text-align: right; flex-shrink: 0; }
+        .breakdown-amount { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+        .breakdown-percent { font-size: 11px; color: var(--text-secondary); }
+        .breakdown-total { text-align: center; padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        .breakdown-total strong { color: var(--text-primary); font-size: 16px; }
+
+        .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:10px 20px; border-radius:20px; font-weight:700; font-size:13px; z-index:300; animation:toastAnim 3s ease; white-space:nowrap; pointer-events: none; }
+        @keyframes toastAnim { 0%{opacity:0;transform:translateX(-50%) translateY(20px)} 10%{opacity:1;transform:translateX(-50%) translateY(0)} 90%{opacity:1} 100%{opacity:0} }
+        .detail-title { display:flex; align-items:center; gap:8px; min-width:0; }
+        .detail-color-circle { width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,0.3); flex-shrink:0; }
+        .detail-title-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        /* Additional fix for car list scroll */
+        .works-list { margin-bottom: 12px; }
+
+        /* ===== TABLET (600px+) ===== */
+        @media (min-width: 600px) {
+            .app-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
+            .car-list {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                padding: 0 16px 0 16px;
+                align-items: start;
+                align-content: start;
+            }
+            .car-card {
+                margin-bottom: 0;
+                padding: 10px 12px;
+            }
+            .car-header {
+                margin: 2px 0 4px;
+            }
+            .car-make-model {
+                gap: 4px;
+            }
+            .color-dot {
+                width: 8px;
+                height: 8px;
+            }
+            .car-plate {
+                padding: 2px 8px;
+                margin-top: 2px;
+            }
+            .car-info {
+                display: flex;
+                gap: 12px;
+                margin-top: 2px;
+            }
+            .car-info > div {
+                flex: 1;
+            }
+            .info-label {
+                margin-bottom: 0;
+                display: inline;
+            }
+            .info-label::after {
+                content: ': ';
+            }
+            .info-value {
+                display: inline;
+            }
+            .add-btn { margin-left: 16px; margin-right: 16px; }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+            .works-list {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+                padding-right: 4px;
+            }
+            .work-item { margin-bottom: 0; }
+            .settings-content {
+                display: block;
+                padding: 0 24px 12px;
+            }
+            .settings-group {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .settings-group .settings-label {
+                grid-column: 1 / -1;
+            }
+
+            .detail-info-bar {
+                padding: 12px 24px;
+            }
+            .detail-scrollable {
+                padding: 0 8px;
+            }
+            .category-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            }
+            .donate-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                max-width: 600px;
+                margin: 12px auto 0;
+            }
+            .donate-custom {
+                max-width: 600px;
+                margin: 12px auto 0;
+            }
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* ===== DESKTOP (960px+) ===== */
+        @media (min-width: 960px) {
+            .car-list {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .works-list {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                padding: 16px 24px;
+            }
+            .donate-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .oil-section {
+                padding: 4px 24px 12px;
+            }
+            .works-section {
+                padding: 0 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+    <!-- NOTCH REMOVED COMPLETELY -->
+    
+    <div class="app-bar">
+        <div class="app-bar-left">
+            <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+            <h1 id="appTitle">🚗 Garage</h1>
+        </div>
+        <div class="app-bar-actions">
+            <button class="edit-btn" id="editBtn" onclick="openEditCarDialog()">✏️</button>
+            <button class="settings-btn" id="settingsBtn" onclick="navigateTo('settings')">⚙️</button>
+        </div>
+    </div>
+
+    <div class="screen active" id="homeScreen">
+        <div class="car-list" id="carList"></div>
+        <div class="add-btn" style="margin: 12px 16px 20px;" onclick="openAddCarDialog()">+ Add New Car</div>
+    </div>
+
+    <div class="screen" id="detailScreen">
+        <div class="detail-info-bar" id="detailBar"></div>
+        <div class="detail-scrollable">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="oil-section" id="oilSection"></div>
+            <div class="works-section">
+                <div class="works-header" id="worksHeader">Service History</div>
+                <div class="works-list" id="worksList"></div>
+            </div>
+        </div>
+        <div class="add-btn" style="margin: 8px 16px 20px; flex-shrink: 0;" onclick="openAddWorkDialog()">+ Add Work Record</div>
+    </div>
+
+    <div class="screen" id="settingsScreen">
+        <div class="settings-content">
+            <div class="settings-group">
+                <div class="settings-label">Preferences</div>
+                <div class="setting-item" onclick="openSettingsModal('language')">
+                    <div class="setting-left"><span class="setting-icon">🌐</span><span class="setting-title">Language</span></div>
+                    <div class="setting-right"><span class="setting-value" id="currentLang">English</span><span class="chevron">›</span></div>
+                </div>
+                <div class="setting-item" onclick="openSettingsModal('distance')">
+                    <div class="setting-left"><span class="setting-icon">📏</span><span class="setting-title">Distance Unit</span></div>
+                    <div class="setting-right"><span class="setting-value" id="currentDist">km</span><span class="chevron">›</span></div>
+                </div>
+                <div class="setting-item" onclick="openSettingsModal('currency')">
+                    <div class="setting-left"><span class="setting-icon">💵</span><span class="setting-title">Currency</span></div>
+                    <div class="setting-right"><span class="setting-value" id="currentCurrency">USD</span><span class="chevron">›</span></div>
+                </div>
+                <div class="setting-item" onclick="openSettingsModal('theme')">
+                    <div class="setting-left"><span class="setting-icon">🎨</span><span class="setting-title">Theme</span></div>
+                    <div class="setting-right"><span class="setting-value" id="currentTheme">Dark</span><span class="chevron">›</span></div>
+                </div>
+            </div>
+            <div class="donate-section">
+                <div class="donate-header"><div class="donate-heart">❤️</div><div class="donate-title">Support Development</div><div class="donate-subtitle">Help us keep the app free and ad-free</div></div>
+                <div class="donate-grid">
+                    <div class="donate-card" onclick="showToast('Thanks for the coffee! ☕')"><div class="donate-icon">☕</div><div class="donate-amount" data-usd="3">$3</div><div class="donate-desc">Coffee</div></div>
+                    <div class="donate-card featured" onclick="showToast('Thanks for the pizza! 🍕')"><div class="donate-icon">🍕</div><div class="donate-amount" data-usd="5">$5</div><div class="donate-desc">Pizza</div></div>
+                    <div class="donate-card" onclick="showToast('Thanks for the beer! 🍺')"><div class="donate-icon">🍺</div><div class="donate-amount" data-usd="10">$10</div><div class="donate-desc">Beer</div></div>
+                </div>
+                <div class="donate-custom"><input type="number" class="donate-input" placeholder="Custom amount" id="customAmount" min="1"><button class="donate-btn" onclick="customDonate()">Donate</button></div>
+                <div class="donate-methods">
+                    <div class="donate-method" onclick="showToast('GitHub')"><div class="donate-method-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></div><div class="donate-method-label">GitHub</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+        <div class="modal" id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+    // Full script preserved, same functionality as original but with fullscreen adjustments
+    const settings = { language: 'en', distanceUnit: 'km', theme: 'dark', currency: 'usd' };
+
+    const categories = {
+        maintenance: { icon: '🔧', label: 'Maintenance', color: '#30d158' },
+        repair: { icon: '🔨', label: 'Repair', color: '#ff9f0a' },
+        replacement: { icon: '🔄', label: 'Replacement', color: '#ff6b6b' },
+        diagnostic: { icon: '🔍', label: 'Diagnostic', color: '#5ac8fa' },
+        tires: { icon: '🛞', label: 'Tires & Wheels', color: '#af52de' },
+        fuel: { icon: '⛽', label: 'Fuel', color: '#ffd700' },
+        insurance: { icon: '🛡️', label: 'Insurance', color: '#6495ed' },
+        cleaning: { icon: '🧹', label: 'Cleaning', color: '#00ced1' },
+        tax: { icon: '📋', label: 'Tax & Fees', color: '#8b5a2b' },
+        parking: { icon: '🅿️', label: 'Parking', color: '#808080' }
+    };
+
+    const currencies = { usd: { symbol: '$', rate: 1, label: 'USD' }, rub: { symbol: '₽', rate: 90, label: 'RUB' }, eur: { symbol: '€', rate: 0.92, label: 'EUR' } };
+
+    function formatCurrency(usdAmount) {
+        const cur = currencies[settings.currency];
+        const converted = usdAmount * cur.rate;
+        if (converted >= 1000000) return cur.symbol + (converted / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (converted >= 1000) return cur.symbol + (converted / 1000).toFixed(converted >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'K';
+        return cur.symbol + Math.round(converted).toLocaleString();
+    }
+
+    function updateDonateCurrency() { document.querySelectorAll('.donate-amount[data-usd]').forEach(el => el.textContent = formatCurrency(parseInt(el.dataset.usd))); }
+
+    const presetColors = [
+        { name: 'Black', hex: '#1a1a1a' }, { name: 'White', hex: '#f5f5f5' },
+        { name: 'Gray', hex: '#808080' },
+        { name: 'Red', hex: '#cc0000' }, { name: 'Blue', hex: '#1e3a8a' },
+        { name: 'Green', hex: '#0d6b0d' }, { name: 'Yellow', hex: '#ffd700' },
+        { name: 'Orange', hex: '#e67e22' }, { name: 'Brown', hex: '#5c3a1e' },
+        { name: 'Purple', hex: '#7b2d8b' }, { name: 'Pink', hex: '#e91e63' }
+    ];
+
+    const cars = [
+        {
+            id: 1, make: 'BMW', model: 'X5', year: 2020, plate: 'A123BC',
+            color: '#1e3a8a', price: 45000, mileage: 45000,
+            oilLife: 65, oilKm: 4500, oilMax: 10000,
+            works: [
+                { id: 1, description: 'Oil change & filter', date: '2026-04-12', cost: 189, category: 'maintenance' },
+                { id: 2, description: 'Summer tires swap', date: '2026-04-02', cost: 320, category: 'tires' },
+                { id: 3, description: 'Annual inspection', date: '2026-03-10', cost: 150, category: 'diagnostic' },
+                { id: 4, description: 'Brake pads front', date: '2026-02-15', cost: 470, category: 'repair' },
+                { id: 5, description: 'Cabin air filter', date: '2026-01-05', cost: 95, category: 'replacement' },
+                { id: 15, description: 'Full tank premium', date: '2026-04-10', cost: 85, category: 'fuel' },
+                { id: 16, description: 'Annual insurance', date: '2026-03-15', cost: 1200, category: 'insurance' },
+                { id: 17, description: 'Premium car wash', date: '2026-03-20', cost: 45, category: 'cleaning' }
+            ]
+        },
+        {
+            id: 2, make: 'Toyota', model: 'Camry', year: 2022, plate: 'M456DE',
+            color: '#c0c0c0', price: 28000, mileage: 28000,
+            oilLife: 40, oilKm: 6000, oilMax: 10000,
+            works: [
+                { id: 6, description: 'Oil change', date: '2026-04-05', cost: 95, category: 'maintenance' },
+                { id: 7, description: 'Tire rotation', date: '2026-03-20', cost: 60, category: 'tires' },
+                { id: 8, description: 'Brake fluid flush', date: '2026-02-10', cost: 130, category: 'maintenance' },
+                { id: 9, description: 'Battery check', date: '2026-01-15', cost: 25, category: 'diagnostic' },
+                { id: 19, description: 'Gas station fill', date: '2026-04-08', cost: 65, category: 'fuel' },
+                { id: 20, description: 'Interior detailing', date: '2026-03-01', cost: 80, category: 'cleaning' }
+            ]
+        },
+        {
+            id: 3, make: 'Mercedes', model: 'C-Class', year: 2019, plate: 'X789FG',
+            color: '#1a1a1a', price: 35000, mileage: 62000,
+            oilLife: 18, oilKm: 10500, oilMax: 12000,
+            works: [
+                { id: 10, description: 'Transmission service', date: '2026-03-15', cost: 580, category: 'repair' },
+                { id: 11, description: 'Oil change', date: '2026-02-20', cost: 150, category: 'maintenance' },
+                { id: 12, description: 'Brake rotors rear', date: '2026-01-08', cost: 670, category: 'replacement' },
+                { id: 13, description: 'Wheel alignment', date: '2025-12-22', cost: 120, category: 'tires' },
+                { id: 14, description: 'Spark plugs', date: '2025-11-10', cost: 340, category: 'replacement' },
+                { id: 21, description: 'Premium diesel', date: '2026-04-11', cost: 95, category: 'fuel' },
+                { id: 22, description: 'Road tax 2026', date: '2026-03-01', cost: 350, category: 'tax' }
+            ]
+        }
+    ];
+
+    let nextId = 4, nextWorkId = 23;
+    let selectedCategory = 'maintenance';
+    let currentScreen = 'home', navStack = ['home'], selectedCarId = null, editCarId = null, editWorkId = null;
+
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function getMonthYearSpending(car, monthOffset) {
+        const now = new Date();
+        let m = now.getMonth() - monthOffset;
+        let y = now.getFullYear();
+        while (m < 0) { m += 12; y--; }
+        return car.works.filter(w => { const d = new Date(w.date); return d.getMonth() === m && d.getFullYear() === y; }).reduce((s,w) => s + w.cost, 0);
+    }
+
+    function getMonthYearWorkCount(car, monthOffset) {
+        const now = new Date();
+        let m = now.getMonth() - monthOffset;
+        let y = now.getFullYear();
+        while (m < 0) { m += 12; y--; }
+        return car.works.filter(w => { const d = new Date(w.date); return d.getMonth() === m && d.getFullYear() === y; }).length;
+    }
+
+    function getMonthName(offset) {
+        const now = new Date();
+        let m = now.getMonth() - offset;
+        let y = now.getFullYear();
+        while (m < 0) { m += 12; y--; }
+        return `${months[m]} ${y}`;
+    }
+
+    function recalcCar(car) {
+        car.totalSpent = car.works.reduce((s,w) => s + w.cost, 0);
+        car.lastService = car.works[0]?.date || 'N/A';
+        car.avgSpent = Math.round(car.totalSpent / (car.works.length || 1));
+        const ct = {};
+        car.works.forEach(w => ct[w.category] = (ct[w.category] || 0) + w.cost);
+        car.catTotals = ct;
+        car.topCat = Object.entries(ct).sort((a,b) => b[1] - a[1])[0] || ['other',0];
+        car.currMonthSpent = getMonthYearSpending(car, 0);
+        car.prevMonthSpent = getMonthYearSpending(car, 1);
+        car.monthlyChange = car.prevMonthSpent > 0 ? Math.round(((car.currMonthSpent - car.prevMonthSpent) / car.prevMonthSpent) * 100) : (car.currMonthSpent > 0 ? 100 : 0);
+    }
+    cars.forEach(c => recalcCar(c));
+
+    function navigateTo(screen) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screen + 'Screen').classList.add('active');
+        const bb = document.getElementById('backBtn'), eb = document.getElementById('editBtn'),
+              sb = document.getElementById('settingsBtn'), t = document.getElementById('appTitle');
+        if (screen === 'home') {
+            bb.classList.remove('visible'); eb.classList.remove('visible'); sb.classList.remove('hidden');
+            t.innerHTML = '🚗 Garage'; navStack = ['home']; renderCarList();
+        } else if (screen === 'detail') {
+            bb.classList.add('visible'); eb.classList.add('visible'); sb.classList.add('hidden');
+            const car = cars.find(c => c.id === selectedCarId);
+            if (car) t.innerHTML = `<div class="detail-title"><div class="detail-color-circle" style="background:${car.color}"></div><span class="detail-title-text">${car.make} ${car.model} ${car.year}</span></div>`;
+            navStack = ['home', 'detail']; renderDetail();
+        } else if (screen === 'settings') {
+            bb.classList.add('visible'); eb.classList.remove('visible'); sb.classList.add('hidden');
+            t.textContent = 'Settings'; navStack.push('settings'); updateSettingsLabels();
+        }
+        currentScreen = screen;
+    }
+
+    function goBack() { if (navStack.length > 1) { navStack.pop(); navigateTo(navStack[navStack.length - 1]); } }
+    function openDetail(carId) { selectedCarId = carId; navigateTo('detail'); }
+
+    function renderCarList() {
+        document.getElementById('carList').innerHTML = cars.map(car => `
+            <div class="car-card" onclick="openDetail(${car.id})">
+                <div class="car-color-strip" style="background:${car.color}"></div>
+                <div class="car-header"><div><div class="car-make-model"><span class="color-dot" style="background:${car.color}"></span>${car.make} ${car.model}</div><div class="car-plate">${car.plate}</div></div><div class="car-price">${formatCurrency(car.price)}</div></div>
+                <div class="car-info"><div><div class="info-label">Year</div><div class="info-value">${car.year}</div></div><div><div class="info-label">Mileage</div><div class="info-value">${car.mileage.toLocaleString()} km</div></div><div><div class="info-label">Total Spent</div><div class="info-value expense">${formatCurrency(car.totalSpent)}</div></div></div>
+            </div>
+        `).join('');
+    }
+
+    function getOilStatus(p) { return p > 50 ? 'good' : p > 20 ? 'warning' : 'danger'; }
+    function getOilLabel(p) { return p > 50 ? 'Good' : p > 20 ? 'Due Soon' : 'Overdue'; }
+
+    function renderDetail() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        document.getElementById('detailBar').innerHTML = `<div class="detail-plate">${car.plate}</div><div class="detail-mileage">${car.mileage.toLocaleString()} km</div><div class="detail-price">${formatCurrency(car.price)}</div>`;
+        const sm = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const pm = new Date().getMonth() === 0 ? 11 : new Date().getMonth() - 1;
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card clickable" onclick="openMonthlyDialog()"><div class="stat-label">💰 Total Spent</div><div class="stat-value expense">${formatCurrency(car.totalSpent)}</div>${car.monthlyChange !== 0 ? `<div class="stat-change ${car.monthlyChange > 0 ? 'increase' : 'decrease'}">${car.monthlyChange > 0 ? '↑' : '↓'} ${Math.abs(car.monthlyChange)}% vs ${sm[pm]} <span style="color:var(--text-secondary)">· Tap for details</span></div>` : '<div class="stat-subtitle">Tap for monthly details</div>'}</div>
+            <div class="stat-card"><div class="stat-label">📊 Avg/Service</div><div class="stat-value">${formatCurrency(car.avgSpent)}</div><div class="stat-subtitle">${car.works.length} services</div></div>
+            <div class="stat-card"><div class="stat-label">📅 Last Service</div><div class="stat-value" style="font-size:16px">${car.lastService}</div>${car.currMonthSpent > 0 ? `<div class="stat-subtitle">This month: ${formatCurrency(car.currMonthSpent)}</div>` : ''}</div>
+            <div class="stat-card clickable" onclick="openBreakdownDialog()"><div class="stat-label">🏆 Top Category</div><div class="stat-value" style="font-size:16px">${categories[car.topCat[0]]?.icon || '📋'} ${categories[car.topCat[0]]?.label || 'Other'}</div><div class="stat-subtitle">${formatCurrency(car.topCat[1])} · Tap for details</div></div>
+        `;
+        const os = getOilStatus(car.oilLife);
+        document.getElementById('oilSection').innerHTML = `<div class="stat-card clickable" style="grid-column:1/-1" onclick="openOilHistoryDialog()"><div class="oil-header"><div class="oil-label">🛢️ Oil Life</div><div class="oil-percentage ${os}">${car.oilLife}% ${getOilLabel(car.oilLife)}</div></div><div class="progress-bar-container"><div class="progress-bar-fill ${os}" style="width:${car.oilLife}%"></div></div><div class="oil-info"><span>${car.oilKm.toLocaleString()} km since change</span><span>max ${car.oilMax.toLocaleString()} km</span></div><div class="stat-subtitle">Tap for oil change history</div></div>`;
+        document.getElementById('worksHeader').textContent = `Service History (${car.works.length})`;
+        document.getElementById('worksList').innerHTML = car.works.slice().reverse().map(w => `
+            <div class="work-item" onclick="openEditWorkDialog(${w.id})"><div class="work-icon ${w.category}">${categories[w.category]?.icon || '📋'}</div><div class="work-info"><h4>${w.description}</h4><div class="work-meta">${w.date} · ${categories[w.category]?.label || 'Other'}</div></div><div class="work-cost">-${formatCurrency(w.cost)}</div></div>
+        `).join('');
+    }
+
+    function openMonthlyDialog() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        const monthlyData = [];
+        for (let i = 3; i >= 0; i--) monthlyData.push({ name: getMonthName(i), spent: getMonthYearSpending(car, i), count: getMonthYearWorkCount(car, i) });
+        const maxSpent = Math.max(...monthlyData.map(m => m.spent), 1);
+        const curr = monthlyData[3], prev = monthlyData[2];
+        const change = prev.spent > 0 ? Math.round(((curr.spent - prev.spent) / prev.spent) * 100) : (curr.spent > 0 ? 100 : 0);
+        content.innerHTML = `<h3>📅 Monthly Spending</h3><div class="monthly-list">${monthlyData.reverse().map((m,idx) => `<div class="monthly-item"><div class="monthly-header"><span class="monthly-month">${m.name}${idx===0?' (now)':''}</span><span class="monthly-amount">${formatCurrency(m.spent)}</span></div><div class="monthly-count">${m.count} work record${m.count!==1?'s':''}</div><div class="monthly-bar-container"><div class="monthly-bar-fill" style="width:${Math.round((m.spent/maxSpent)*100)}%"></div></div></div>`).join('')}</div><div class="comparison-summary"><span class="comparison-arrow">${change>0?'↑':change<0?'↓':'→'}</span><span class="comparison-text ${change>0?'increase':change<0?'decrease':''}">${change===0?'No change':`${Math.abs(change)}% ${change>0?'more':'less'} than previous month`}</span></div><button class="modal-cancel" onclick="closeModal()">Close</button>`;
+        overlay.classList.add('active');
+    }
+
+    function openBreakdownDialog() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        const sortedCats = Object.entries(car.catTotals).sort((a,b) => b[1] - a[1]);
+        const maxCost = sortedCats[0]?.[1] || 1;
+        content.innerHTML = `<h3>📊 Spending by Category</h3><div class="breakdown-list">${sortedCats.map(([cat,cost]) => { const pct = Math.round((cost/car.totalSpent)*100); return `<div class="breakdown-item"><div class="breakdown-icon">${categories[cat]?.icon||'📋'}</div><div class="breakdown-info"><div class="breakdown-name">${categories[cat]?.label||'Other'}</div><div class="breakdown-bar-container"><div class="breakdown-bar-fill" style="width:${Math.round((cost/maxCost)*100)}%;background:${categories[cat]?.color||'#808080'}"></div></div></div><div class="breakdown-right"><div class="breakdown-amount">${formatCurrency(cost)}</div><div class="breakdown-percent">${pct}%</div></div></div>`; }).join('')}</div><div class="breakdown-total">Total: <strong>${formatCurrency(car.totalSpent)}</strong></div><button class="modal-cancel" onclick="closeModal()">Close</button>`;
+        overlay.classList.add('active');
+    }
+
+    function openOilHistoryDialog() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        const oilWorks = car.works.filter(w => w.description.toLowerCase().includes('oil'));
+        const os = getOilStatus(car.oilLife);
+        content.innerHTML = `<h3>🛢️ Oil Change History</h3><div style="background:var(--bg-secondary);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:2px">Oil Life</div><div style="font-size:18px;font-weight:700;color:var(--${os === 'good' ? 'oil-green' : os === 'warning' ? 'oil-yellow' : 'oil-red'})">${car.oilLife}%</div></div><div style="text-align:center"><div style="font-size:12px;color:var(--text-secondary);margin-bottom:2px">Since Change</div><div style="font-size:16px;font-weight:600">${car.oilKm.toLocaleString()} km</div></div><div style="text-align:right"><div style="font-size:12px;color:var(--text-secondary);margin-bottom:2px">Max</div><div style="font-size:16px;font-weight:600">${car.oilMax.toLocaleString()} km</div></div></div>${oilWorks.length === 0 ? '<div style="text-align:center;padding:20px;color:var(--text-secondary)">No oil change records yet</div>' : `<div style="font-size:13px;font-weight:600;margin-bottom:8px">${oilWorks.length} oil change${oilWorks.length > 1 ? 's' : ''}</div><div class="breakdown-list">${oilWorks.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(w => `<div class="breakdown-item"><div class="breakdown-icon">🔧</div><div class="breakdown-info"><div class="breakdown-name">${w.description}</div><div class="breakdown-bar-container" style="height:2px;margin-top:6px"><div class="breakdown-bar-fill" style="width:100%;background:var(--accent)"></div></div></div><div class="breakdown-right"><div class="breakdown-amount" style="color:var(--expense)">-${formatCurrency(w.cost)}</div><div class="breakdown-percent">${w.date}</div></div></div>`).join('')}</div>`}<button class="modal-cancel" onclick="closeModal()">Close</button>`;
+        overlay.classList.add('active');
+    }
+
+    function updateSettingsLabels() {
+        document.getElementById('currentLang').textContent = settings.language === 'en' ? 'English' : 'Русский';
+        document.getElementById('currentDist').textContent = settings.distanceUnit;
+        document.getElementById('currentCurrency').textContent = currencies[settings.currency].label;
+        document.getElementById('currentTheme').textContent = settings.theme === 'dark' ? 'Dark' : (settings.theme === 'light' ? 'Light' : 'System');
+    }
+
+    function openAddCarDialog() {
+        editCarId = null;
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        content.innerHTML = `<h3>🚗 Add New Car</h3><div class="form-group"><label class="form-label">Make</label><input class="form-input" id="carMake" placeholder="e.g. BMW"></div><div class="form-group"><label class="form-label">Model</label><input class="form-input" id="carModel" placeholder="e.g. X5"></div><div class="form-row"><div class="form-group"><label class="form-label">Year</label><input class="form-input" id="carYear" type="number" placeholder="2024" min="1900" max="2030"></div><div class="form-group"><label class="form-label">Plate</label><input class="form-input" id="carPlate" placeholder="A123BC"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Price ($)</label><input class="form-input" id="carPrice" type="number" placeholder="30000" min="0"></div><div class="form-group"><label class="form-label">Mileage (km)</label><input class="form-input" id="carMileage" type="number" placeholder="0" min="0"></div></div><div class="form-group"><label class="form-label">Color</label><div class="color-picker-group" id="colorPicker"></div><input type="hidden" id="selectedColor" value="#1e3a8a"></div><div class="form-actions"><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" id="saveCarBtn">Save Car</button></div>`;
+        overlay.classList.add('active');
+        renderColorPicker('#1e3a8a');
+        document.getElementById('saveCarBtn').addEventListener('click', saveNewCar);
+    }
+
+    function openEditCarDialog() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        editCarId = car.id;
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        content.innerHTML = `<h3>✏️ Edit Car</h3><div class="form-group"><label class="form-label">Make</label><input class="form-input" id="carMake" value="${car.make}"></div><div class="form-group"><label class="form-label">Model</label><input class="form-input" id="carModel" value="${car.model}"></div><div class="form-row"><div class="form-group"><label class="form-label">Year</label><input class="form-input" id="carYear" type="number" value="${car.year}" min="1900" max="2030"></div><div class="form-group"><label class="form-label">Plate</label><input class="form-input" id="carPlate" value="${car.plate}"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Price ($)</label><input class="form-input" id="carPrice" type="number" value="${car.price}" min="0"></div><div class="form-group"><label class="form-label">Mileage (km)</label><input class="form-input" id="carMileage" type="number" value="${car.mileage}" min="0"></div></div><div class="form-group"><label class="form-label">Color</label><div class="color-picker-group" id="colorPicker"></div><input type="hidden" id="selectedColor" value="${car.color}"></div><div class="form-actions"><button class="btn-danger-sm" onclick="deleteCar(${car.id})">🗑️</button><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" id="saveCarBtn">Save Changes</button></div>`;
+        overlay.classList.add('active');
+        renderColorPicker(car.color);
+        document.getElementById('saveCarBtn').addEventListener('click', saveEditCar);
+    }
+
+    function renderColorPicker(selectedHex) {
+        const picker = document.getElementById('colorPicker');
+        if (!picker) return;
+        picker.innerHTML = presetColors.map(c => `<div class="color-option ${c.hex===selectedHex?'selected':''}" style="background:${c.hex};${c.hex==='#f5f5f5'||c.hex==='#ffd700'||c.hex==='#32cd32'||c.hex==='#d4b896'?'border:1px solid #555;':''}" onclick="selectColor('${c.hex}')" title="${c.name}"></div>`).join('');
+    }
+
+    function selectColor(hex) {
+        const input = document.getElementById('selectedColor');
+        if (input) input.value = hex;
+        document.querySelectorAll('.color-option').forEach(e => e.classList.remove('selected'));
+        if (event?.target) event.target.classList.add('selected');
+    }
+
+    function getCarFormData() {
+        return {
+            make: document.getElementById('carMake')?.value.trim() || '',
+            model: document.getElementById('carModel')?.value.trim() || '',
+            year: parseInt(document.getElementById('carYear')?.value) || 0,
+            plate: document.getElementById('carPlate')?.value.trim() || '',
+            price: parseInt(document.getElementById('carPrice')?.value) || 0,
+            mileage: parseInt(document.getElementById('carMileage')?.value) || 0,
+            color: document.getElementById('selectedColor')?.value || '#1e3a8a'
+        };
+    }
+
+    function saveNewCar() {
+        const d = getCarFormData();
+        if (!d.make || !d.model || !d.year || !d.plate || !d.price || !d.mileage) { showToast('Please fill all fields'); return; }
+        const car = { id: nextId++, ...d, oilLife: 100, oilKm: 0, oilMax: 10000, works: [] };
+        recalcCar(car);
+        cars.unshift(car);
+        closeModal(); renderCarList();
+        showToast(`${d.make} ${d.model} added! 🎉`);
+    }
+
+    function saveEditCar() {
+        const car = cars.find(c => c.id === editCarId);
+        if (!car) return;
+        const d = getCarFormData();
+        if (!d.make || !d.model || !d.year || !d.plate || !d.price || !d.mileage) { showToast('Please fill all fields'); return; }
+        Object.assign(car, d);
+        closeModal();
+        if (currentScreen === 'detail') { renderDetail(); document.getElementById('appTitle').innerHTML = `<div class="detail-title"><div class="detail-color-circle" style="background:${car.color}"></div><span class="detail-title-text">${car.make} ${car.model} ${car.year}</span></div>`; }
+        if (currentScreen === 'home') renderCarList();
+        showToast(`${d.make} ${d.model} updated! ✅`);
+    }
+
+    function deleteCar(carId) {
+        if (!confirm(`Delete ${cars.find(c=>c.id===carId)?.make} ${cars.find(c=>c.id===carId)?.model}?`)) return;
+        const idx = cars.findIndex(c => c.id === carId);
+        if (idx === -1) return;
+        cars.splice(idx, 1);
+        editCarId = null;
+        closeModal();
+        goBack();
+        showToast(`Car deleted 🗑️`);
+    }
+
+    function openAddWorkDialog() {
+        selectedCategory = 'maintenance';
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        const today = new Date().toISOString().split('T')[0];
+        content.innerHTML = `<h3>🔧 Add Work Record</h3><div class="form-group"><label class="form-label">Description</label><input class="form-input" id="workDesc" placeholder="e.g. Oil change & filter"></div><div class="form-row-60-40"><div class="form-group"><label class="form-label">Date</label><input class="form-input" id="workDate" type="date" value="${today}"></div><div class="form-group"><label class="form-label">Cost ($)</label><input class="form-input" id="workCost" type="number" placeholder="150" min="0"></div></div><div class="form-group"><label class="form-label">Category</label><div class="category-grid" id="categoryGrid"></div></div><div class="form-actions"><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" id="saveWorkBtn">Save Work</button></div>`;
+        overlay.classList.add('active');
+        renderCategoryGrid();
+        document.getElementById('saveWorkBtn').addEventListener('click', saveNewWork);
+    }
+
+    function renderCategoryGrid() {
+        const grid = document.getElementById('categoryGrid');
+        if (!grid) return;
+        grid.innerHTML = Object.entries(categories).map(([key,cat]) => `<div class="category-option ${selectedCategory===key?'selected':''}" onclick="selectCategory('${key}')"><span class="category-icon">${cat.icon}</span><span class="category-name">${cat.label}</span></div>`).join('');
+    }
+
+    function selectCategory(key) {
+        selectedCategory = key;
+        document.querySelectorAll('.category-option').forEach(e => e.classList.remove('selected'));
+        const el = event?.target?.closest('.category-option');
+        if (el) el.classList.add('selected');
+    }
+
+    function saveNewWork() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        const desc = document.getElementById('workDesc')?.value.trim() || '';
+        const date = document.getElementById('workDate')?.value || '';
+        const cost = parseInt(document.getElementById('workCost')?.value) || 0;
+        if (!desc || !date || cost <= 0) { showToast('Please fill all fields'); return; }
+        car.works.unshift({ id: nextWorkId++, description: desc, date, cost, category: selectedCategory });
+        recalcCar(car);
+        closeModal();
+        if (currentScreen === 'detail') renderDetail();
+        if (currentScreen === 'home') renderCarList();
+        showToast(`${desc} added! ✅`);
+    }
+
+    function openEditWorkDialog(workId) {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        const work = car.works.find(w => w.id === workId);
+        if (!work) return;
+        editWorkId = workId;
+        selectedCategory = work.category;
+        const overlay = document.getElementById('modalOverlay'), content = document.getElementById('modalContent');
+        content.innerHTML = `<h3>✏️ Edit Work Record</h3><div class="form-group"><label class="form-label">Description</label><input class="form-input" id="workDesc" value="${work.description.replace(/"/g,'&quot;')}"></div><div class="form-row-60-40"><div class="form-group"><label class="form-label">Date</label><input class="form-input" id="workDate" type="date" value="${work.date}"></div><div class="form-group"><label class="form-label">Cost ($)</label><input class="form-input" id="workCost" type="number" value="${work.cost}" min="0"></div></div><div class="form-group"><label class="form-label">Category</label><div class="category-grid" id="categoryGrid"></div></div><div class="form-actions"><button class="btn-danger-sm" onclick="deleteWork(${workId})">🗑️</button><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" id="saveWorkBtn">Save Changes</button></div>`;
+        overlay.classList.add('active');
+        renderCategoryGrid();
+        document.getElementById('saveWorkBtn').addEventListener('click', saveEditWork);
+    }
+
+    function saveEditWork() {
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        const work = car.works.find(w => w.id === editWorkId);
+        if (!work) return;
+        const desc = document.getElementById('workDesc')?.value.trim() || '';
+        const date = document.getElementById('workDate')?.value || '';
+        const cost = parseInt(document.getElementById('workCost')?.value) || 0;
+        if (!desc || !date || cost <= 0) { showToast('Please fill all fields'); return; }
+        work.description = desc;
+        work.date = date;
+        work.cost = cost;
+        work.category = selectedCategory;
+        recalcCar(car);
+        editWorkId = null;
+        closeModal();
+        if (currentScreen === 'detail') renderDetail();
+        showToast(`Work record updated! ✅`);
+    }
+
+    function deleteWork(workId) {
+        if (!confirm('Delete this work record?')) return;
+        const car = cars.find(c => c.id === selectedCarId);
+        if (!car) return;
+        car.works = car.works.filter(w => w.id !== workId);
+        recalcCar(car);
+        editWorkId = null;
+        closeModal();
+        if (currentScreen === 'detail') renderDetail();
+        showToast(`Work record deleted 🗑️`);
+    }
+
+    function openSettingsModal(type) {
+        const content = document.getElementById('modalContent');
+        if (type === 'language') content.innerHTML = `<h3>🌐 Language</h3><div class="modal-option ${settings.language==='en'?'selected':''}" onclick="changeSetting('language','en')">🇺🇸 English ${settings.language==='en'?'✓':''}</div><div class="modal-option ${settings.language==='ru'?'selected':''}" onclick="changeSetting('language','ru')">🇷🇺 Русский ${settings.language==='ru'?'✓':''}</div><button class="modal-cancel" onclick="closeModal()">Cancel</button>`;
+        else if (type === 'distance') content.innerHTML = `<h3>📏 Distance Unit</h3><div class="modal-option ${settings.distanceUnit==='km'?'selected':''}" onclick="changeSetting('distanceUnit','km')">🔷 Kilometers ${settings.distanceUnit==='km'?'✓':''}</div><div class="modal-option ${settings.distanceUnit==='mi'?'selected':''}" onclick="changeSetting('distanceUnit','mi')">🔶 Miles ${settings.distanceUnit==='mi'?'✓':''}</div><button class="modal-cancel" onclick="closeModal()">Cancel</button>`;
+        else if (type === 'currency') content.innerHTML = `<h3>💵 Currency</h3><div class="modal-option ${settings.currency==='usd'?'selected':''}" onclick="changeSetting('currency','usd')">🇺🇸 USD \$ ${settings.currency==='usd'?'✓':''}</div><div class="modal-option ${settings.currency==='rub'?'selected':''}" onclick="changeSetting('currency','rub')">🇷🇺 RUB ₽ ${settings.currency==='rub'?'✓':''}</div><div class="modal-option ${settings.currency==='eur'?'selected':''}" onclick="changeSetting('currency','eur')">🇪🇺 EUR € ${settings.currency==='eur'?'✓':''}</div><button class="modal-cancel" onclick="closeModal()">Cancel</button>`;
+        else if (type === 'theme') content.innerHTML = `<h3>🎨 Theme</h3><div class="modal-option ${settings.theme==='dark'?'selected':''}" onclick="changeSetting('theme','dark')">🌙 Dark ${settings.theme==='dark'?'✓':''}</div><div class="modal-option ${settings.theme==='light'?'selected':''}" onclick="changeSetting('theme','light')">☀️ Light ${settings.theme==='light'?'✓':''}</div><div class="modal-option ${settings.theme==='system'?'selected':''}" onclick="changeSetting('theme','system')">💻 System ${settings.theme==='system'?'✓':''}</div><button class="modal-cancel" onclick="closeModal()">Cancel</button>`;
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function applyTheme() {
+        const app = document.getElementById('app');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        const isLight = settings.theme === 'light' || (settings.theme === 'system' && prefersLight);
+        app.classList.toggle('light-theme', isLight);
+    }
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
+
+    function changeSetting(key, value) { settings[key] = value; updateSettingsLabels(); closeModal(); applyTheme(); if (key === 'distanceUnit') renderCarList(); if (key === 'currency') { renderCarList(); if (currentScreen === 'detail') renderDetail(); updateDonateCurrency(); } }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+    function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+    function customDonate() { const a = document.getElementById('customAmount')?.value; showToast(a && a > 0 ? `Thanks for ${formatCurrency(parseInt(a))}! ❤️` : 'Enter a valid amount'); }
+    function showToast(msg) { const e = document.querySelector('.toast'); if (e) e.remove(); const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.getElementById('app').appendChild(t); setTimeout(() => t.remove(), 3000); }
+
+    applyTheme();
+    renderCarList();
+    updateSettingsLabels();
+    updateDonateCurrency();
+</script>
+</body>
+</html>

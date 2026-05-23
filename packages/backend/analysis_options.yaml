@@ -1,0 +1,7 @@
+linter:
+  rules:
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - unnecessary_string_escapes
+    - avoid_redundant_argument_values
+    - use_super_parameters

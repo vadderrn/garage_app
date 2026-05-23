@@ -1,0 +1,63 @@
+docs/superpowers/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+.worktrees/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+*.g.dart
+*.freezed.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+*.lock
+.metadata
+
+# Platform folders (regenerated via flutter create)
+android/
+!android/app/build.gradle.kts
+!android/app/src/main/kotlin/**/MainActivity.kt
+!android/app/src/main/AndroidManifest.xml
+ios/
+macos/
+linux/
+windows/
+!windows/CMakeLists.txt
+!windows/runner/main.cpp
+!windows/runner/Runner.rc
+web/
+

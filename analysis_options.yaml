@@ -1,0 +1,11 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - avoid_unnecessary_containers
+    - unnecessary_string_escapes
+    - avoid_redundant_argument_values
+    - use_super_parameters
+    - sort_child_properties_last
