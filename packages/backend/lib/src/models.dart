@@ -14,6 +14,7 @@ abstract class WorkRecord with _$WorkRecord {
     required String date,
     required int cost,
     required String category,
+    @Default(null) int? mileage,
   }) = _WorkRecord;
 
   const WorkRecord._();

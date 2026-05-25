@@ -52,4 +52,31 @@ class CarDetailNotifier extends ChangeNotifier {
     await _repo.deleteWorkRecord(carId, workId);
     await _reloadAll(carId);
   }
+
+  Future<void> recalculateOilLife(int carId, int currentMileage, int oilMax) async {
+    if (oilMax <= 0) return;
+
+    final maxWorkKm = _works
+        .where((w) => w.mileage != null)
+        .fold<int>(currentMileage, (m, w) => w.mileage! > m ? w.mileage! : m);
+
+    final oilWorks = _works.where((w) => w.mileage != null && isOilChange(w.description)).toList()
+      ..sort((a, b) {
+        final d = b.date.compareTo(a.date);
+        return d != 0 ? d : b.id.compareTo(a.id);
+      });
+
+    // Load current car to get baseline for last-oil-change mileage
+    final cars = await _repo.loadCars();
+    final idx = cars.indexWhere((c) => c.id == carId);
+    if (idx < 0) return;
+    final car = cars[idx];
+
+    final lastOilKm = oilWorks.isNotEmpty ? oilWorks.first.mileage! : car.mileage - car.oilKm;
+
+    final oilKm = (maxWorkKm - lastOilKm).clamp(0, oilMax);
+    final oilLife = ((1 - oilKm / oilMax) * 100).round().clamp(0, 100);
+
+    await _repo.updateCar(car.copyWith(mileage: maxWorkKm, oilKm: oilKm, oilLife: oilLife));
+  }
 }

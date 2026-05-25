@@ -64,3 +64,8 @@ String formatMonth(int month) => month.toString().padLeft(2, '0');
 
 const githubUrl = 'https://github.com/vadderrn';
 const boostyUrl = 'https://boosty.to/vadderrn/donate';
+
+bool isOilChange(String description) {
+  final lowered = description.toLowerCase();
+  return lowered.contains('oil') || lowered.contains('масл');
+}

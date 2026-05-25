@@ -14,7 +14,7 @@ void showOilHistoryDialog(
 ) {
   final cs = Theme.of(context).colorScheme;
   final currency = context.read<SettingsNotifier>().currency;
-  final oilWorks = detail.works.where((w) => w.description.toLowerCase().contains('oil')).toList();
+  final oilWorks = detail.works.where((w) => isOilChange(w.description)).toList();
   final status = car.oilLife > 50
       ? 'good'
       : car.oilLife > 20

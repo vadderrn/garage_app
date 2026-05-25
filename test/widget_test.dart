@@ -399,14 +399,22 @@ void main() {
       expect(find.textContaining('Service History'), findsOneWidget);
     });
 
-    testWidgets('shows add work button', (tester) async {
+    testWidgets('shows mileage field in work form', (tester) async {
       await tester.pumpWidget(createApp());
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('BMW X5'));
       await tester.pumpAndSettle();
 
-      expect(find.text('+ Add Work Record'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('+ Add Work Record'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('+ Add Work Record'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mileage'), findsWidgets);
     });
   });
 
@@ -574,6 +582,24 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Service History'), findsOneWidget);
+    });
+
+    testWidgets('shows mileage field in work form', (tester) async {
+      await tester.pumpWidget(createApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('BMW X5'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('+ Add Work Record'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('+ Add Work Record'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mileage'), findsWidgets);
     });
   });
 

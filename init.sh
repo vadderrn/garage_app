@@ -21,4 +21,4 @@ echo "=== Building ui generated code ==="
 (cd packages/ui && dart run build_runner build)
 
 echo ""
-echo "Done. Run 'sh format.sh' to format, 'sh run_tests.sh' to test."
+echo "Done. Run 'sh format.sh' to format, 'sh tests.sh' to test."

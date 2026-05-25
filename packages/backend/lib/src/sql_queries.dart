@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS work_records (
   date        TEXT NOT NULL,
   cost        INTEGER NOT NULL,
   category    TEXT NOT NULL,
+  mileage     INTEGER,
   FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
 )
 ''';
@@ -60,13 +61,17 @@ const String deleteCarSQL = '''
 DELETE FROM cars WHERE id = ?
 ''';
 
+const String migrateWorkRecordsSQL = '''
+ALTER TABLE work_records ADD COLUMN mileage INTEGER
+''';
+
 const String insertWorkRecordSQL = '''
-INSERT INTO work_records (car_id, description, date, cost, category)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO work_records (car_id, description, date, cost, category, mileage)
+VALUES (?, ?, ?, ?, ?, ?)
 ''';
 
 const String updateWorkRecordSQL = '''
-UPDATE work_records SET description=?, date=?, cost=?, category=? WHERE id=?
+UPDATE work_records SET description=?, date=?, cost=?, category=?, mileage=? WHERE id=?
 ''';
 
 const String deleteWorkRecordSQL = '''

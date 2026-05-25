@@ -229,7 +229,17 @@ class DetailScreen extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(isTablet ? 24 : 16, 8, isTablet ? 24 : 16, 20),
       child: AddButton(
         label: context.l10n.addWork,
-        onTap: () => showWorkFormDialog(context, car.id, null, detail),
+        onTap: () {
+          final c = context.read<CarListNotifier>().selectedCar;
+          showWorkFormDialog(
+            context,
+            car.id,
+            null,
+            detail,
+            currentMileage: c?.mileage ?? car.mileage,
+            oilMax: c?.oilMax ?? car.oilMax,
+          );
+        },
       ),
     );
   }
@@ -247,7 +257,14 @@ class DetailScreen extends StatelessWidget {
       child: WorkItem(
         work: w,
         currency: currency,
-        onTap: () => showWorkFormDialog(context, carId, w, detail),
+        onTap: () => showWorkFormDialog(
+          context,
+          carId,
+          w,
+          detail,
+          currentMileage: context.read<CarListNotifier>().selectedCar?.mileage ?? 0,
+          oilMax: context.read<CarListNotifier>().selectedCar?.oilMax ?? 10000,
+        ),
       ),
     );
   }

@@ -10,14 +10,19 @@ void showWorkFormDialog(
   BuildContext context,
   int carId,
   WorkRecord? existing,
-  CarDetailNotifier detail,
-) {
+  CarDetailNotifier detail, {
+  int currentMileage = 0,
+  int oilMax = 10000,
+}) {
   final isEdit = existing != null;
   final descCtrl = TextEditingController(text: existing?.description ?? '');
   final dateCtrl = TextEditingController(
     text: existing?.date ?? DateTime.now().toIso8601String().substring(0, 10),
   );
   final costCtrl = TextEditingController(text: existing?.cost.toString() ?? '');
+  final mileageCtrl = TextEditingController(
+    text: existing?.mileage?.toString() ?? (currentMileage > 0 ? currentMileage.toString() : ''),
+  );
   var selectedCat = existing?.category ?? categories.keys.first;
   var errors = <String, String?>{};
 
@@ -27,12 +32,13 @@ void showWorkFormDialog(
       pickDate(ctx, dateCtrl);
     }
 
-    void onSave() {
-      final errs = _validateWork(context, descCtrl, dateCtrl, costCtrl);
+    Future<void> onSave() async {
+      final errs = _validateWork(context, descCtrl, dateCtrl, costCtrl, mileageCtrl);
       if (errs.isNotEmpty) {
         setSheetState(() => errors = errs);
         return;
       }
+      final mileage = int.tryParse(mileageCtrl.text.trim());
       Navigator.pop(ctx);
       final record = WorkRecord(
         id: existing?.id ?? -1,
@@ -40,11 +46,16 @@ void showWorkFormDialog(
         date: dateCtrl.text.trim(),
         cost: int.parse(costCtrl.text.trim()),
         category: selectedCat,
+        mileage: mileage,
       );
       if (isEdit) {
-        detail.updateWork(carId, record);
+        await detail.updateWork(carId, record);
       } else {
-        detail.addWork(carId, record);
+        await detail.addWork(carId, record);
+      }
+      await detail.recalculateOilLife(carId, currentMileage, oilMax);
+      if (context.mounted) {
+        context.read<CarListNotifier>().load();
       }
     }
 
@@ -91,6 +102,15 @@ void showWorkFormDialog(
         selected: selectedCat,
         onSelect: (key) => setSheetState(() => selectedCat = key),
       ),
+      gapH12,
+      formField(
+        context,
+        context.l10n.mileage,
+        mileageCtrl,
+        hint: '0',
+        keyboardType: TextInputType.number,
+        onChanged: (_) => setSheetState(() => errors.remove('mileage')),
+      ),
       gapH20,
       formActionRow(
         context,
@@ -119,6 +139,7 @@ Map<String, String> _validateWork(
   TextEditingController desc,
   TextEditingController date,
   TextEditingController cost,
+  TextEditingController mileage,
 ) {
   return validateFields(context, [
     ValidationRule('desc', desc, (v, ctx) => v.isEmpty ? ctx.l10n.descRequired : null),
@@ -126,6 +147,11 @@ Map<String, String> _validateWork(
     ValidationRule('cost', cost, (v, ctx) {
       final c = int.tryParse(v);
       return v.isEmpty || c == null || c <= 0 ? ctx.l10n.costInvalid : null;
+    }),
+    ValidationRule('mileage', mileage, (v, ctx) {
+      if (v.isEmpty) return null;
+      final m = int.tryParse(v);
+      return m == null || m < 0 ? 'Enter a valid mileage' : null;
     }),
   ]);
 }

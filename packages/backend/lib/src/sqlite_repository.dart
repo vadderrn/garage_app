@@ -26,6 +26,11 @@ class SqliteCarRepository implements CarRepository {
   void _createTables() {
     _db.execute(createTablesSQL);
     _db.execute(createWorkRecordsTableSQL);
+    try {
+      _db.execute(migrateWorkRecordsSQL);
+    } catch (_) {
+      // Column already exists — safe to ignore
+    }
   }
 
   @override
@@ -100,6 +105,7 @@ class SqliteCarRepository implements CarRepository {
       record.date,
       record.cost,
       record.category,
+      record.mileage,
     ]);
     final id = _db.lastInsertRowId;
     return record.copyWith(id: id);
@@ -112,6 +118,7 @@ class SqliteCarRepository implements CarRepository {
       record.date,
       record.cost,
       record.category,
+      record.mileage,
       record.id,
     ]);
     return record;

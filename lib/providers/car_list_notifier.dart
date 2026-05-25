@@ -21,6 +21,13 @@ class CarListNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Car?> loadCar(int carId) async {
+    final cars = await _repo.loadCars();
+    _cars = cars;
+    notifyListeners();
+    return cars.where((c) => c.id == carId).firstOrNull;
+  }
+
   void selectCar(int? id) {
     _selectedCarId = id;
     notifyListeners();
