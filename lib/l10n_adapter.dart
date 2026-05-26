@@ -356,4 +356,16 @@ class AppL10nAdapter implements L10n {
 
   @override
   String get costInvalid => _delegate.costInvalid;
+  @override
+  String get data => _delegate.data;
+  @override
+  String get exportCsv => _delegate.exportCsv;
+  @override
+  String get importCsv => _delegate.importCsv;
+  @override
+  String get importConfirm => _delegate.importConfirm;
+  @override
+  String get importSuccess => _delegate.importSuccess;
+  @override
+  String get importError => _delegate.importError;
 }

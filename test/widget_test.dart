@@ -246,6 +246,9 @@ class MockCarRepository implements CarRepository {
     final ms = month.toString().padLeft(2, '0');
     return car.works.where((w) => w.date.startsWith('$year-$ms')).length;
   }
+
+  @override
+  Future<void> clearAll() async => _cars.clear();
 }
 
 class MockSettingsRepo implements SettingsRepository {
@@ -693,6 +696,18 @@ void main() {
       expect(find.text('Dark'), findsWidgets);
       expect(find.text('Light'), findsOneWidget);
       expect(find.text('System'), findsOneWidget);
+    });
+
+    testWidgets('Data section shows Export and Import buttons', (tester) async {
+      await tester.pumpWidget(createApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('\u{2699}\u{FE0F}'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Data'), findsOneWidget);
+      expect(find.text('Export CSV'), findsWidgets);
+      expect(find.text('Import CSV'), findsWidgets);
     });
   });
 

@@ -19,4 +19,5 @@ abstract class CarRepository {
   Future<MapEntry<String, int>?> getTopCategory(int carId);
   Future<int> getMonthYearSpending(int carId, int year, int month);
   Future<int> getMonthYearWorkCount(int carId, int year, int month);
+  Future<void> clearAll();
 }

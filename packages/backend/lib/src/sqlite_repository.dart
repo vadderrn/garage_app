@@ -178,4 +178,10 @@ class SqliteCarRepository implements CarRepository {
     final result = _db.select(getMonthYearWorkCountSQL, [carId, year.toString(), monthStr]);
     return result.first['c'] as int;
   }
+
+  @override
+  Future<void> clearAll() async {
+    _db.execute('DELETE FROM work_records');
+    _db.execute('DELETE FROM cars');
+  }
 }

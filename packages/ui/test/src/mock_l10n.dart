@@ -236,4 +236,16 @@ class MockL10n implements L10n {
   String get dateRequired => '';
   @override
   String get costInvalid => '';
+  @override
+  String get data => '';
+  @override
+  String get exportCsv => '';
+  @override
+  String get importCsv => '';
+  @override
+  String get importConfirm => '';
+  @override
+  String get importSuccess => '';
+  @override
+  String get importError => '';
 }

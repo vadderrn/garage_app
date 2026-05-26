@@ -107,6 +107,12 @@ When renaming any class/type, grep the full concept (not just the type name) and
 - Mocks and test helpers
 - Analyze + test in one command before declaring done
 
+## Backup API convention
+- `exportCsv()`, `parseCsv()`, `importCsv()` work with `String` CSV data.
+- `exportCsvBytes()` and `importCsvBytes()` wrap those with `Uint8List` bytes via `dart:convert`/`dart:typed_data` (both pure Dart SDK libs).
+- **Rule**: Keep pure Dart API in `backend` — never import Flutter. `dart:io`, `dart:convert`, `dart:typed_data` are pure Dart SDK libs and allowed.
+- All bytes/encode logic lives in `backend` (`backup.dart`). The app layer never sees CSV strings or encode calls.
+
 ## Test commands
 - `sh format.sh` — format all Dart files (always run this after code changes)
 - `sh tests.sh` — run all test suites (backend + Flutter + ui)

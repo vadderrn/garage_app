@@ -12,6 +12,7 @@ Your garage of cars in your phone. Track their mainteinance and daily spendings.
 | Oil life tracking | Never miss an oil change |
 | Statistics | Total spent, averages, top category |
 | Dark mode | Light & dark themes |
+| CSV backup | Export/import your data as CSV |
 | Your data stays yours | All data stored locally on device |
 
 ## Structure

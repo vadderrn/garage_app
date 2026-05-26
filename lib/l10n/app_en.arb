@@ -119,5 +119,11 @@
   "mileageInvalid": "Enter a valid mileage",
   "descRequired": "Description is required",
   "dateRequired": "Date is required",
-  "costInvalid": "Enter a valid cost greater than 0"
+  "costInvalid": "Enter a valid cost greater than 0",
+  "data": "Data",
+  "exportCsv": "Export CSV",
+  "importCsv": "Import CSV",
+  "importConfirm": "This will replace all current data. Continue?",
+  "importSuccess": "Data imported successfully",
+  "importError": "Failed to import data"
 }

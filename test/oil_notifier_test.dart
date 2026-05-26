@@ -70,6 +70,8 @@ class MockRepo implements CarRepository {
   Future<int> getMonthYearSpending(int carId, int year, int month) async => 0;
   @override
   Future<int> getMonthYearWorkCount(int carId, int year, int month) async => 0;
+  @override
+  Future<void> clearAll() async => _cars.clear();
 }
 
 void main() {

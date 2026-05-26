@@ -13,3 +13,4 @@ export 'src/sql_queries.dart';
 export 'src/sql_seed_data.dart';
 export 'src/sqlite_settings_repository.dart';
 export 'src/l10n.dart';
+export 'src/backup.dart';

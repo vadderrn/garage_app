@@ -118,4 +118,10 @@ abstract class L10n {
   String get descRequired;
   String get dateRequired;
   String get costInvalid;
+  String get data;
+  String get exportCsv;
+  String get importCsv;
+  String get importConfirm;
+  String get importSuccess;
+  String get importError;
 }

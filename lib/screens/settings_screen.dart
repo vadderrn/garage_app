@@ -1,10 +1,12 @@
 // Copyright (c) 2026 vadderrn
 // SPDX-License-Identifier: MIT
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:backend/backend.dart';
 import 'package:ui/ui.dart';
+import 'package:file_picker/file_picker.dart';
 import '../providers/providers.dart';
 import 'dialogs/dialogs.dart';
 
@@ -15,6 +17,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final notifier = context.watch<SettingsNotifier>();
     final s = notifier.settings;
+    final repo = context.read<CarRepository>();
     final isTablet = context.isTablet;
     final pad = isTablet ? 24.0 : 16.0;
     final prefs = _buildPrefs(context, notifier, s);
@@ -30,6 +33,8 @@ class SettingsScreen extends StatelessWidget {
           gapH4,
           ...prefs.expand((p) => [p, gapH4]),
         ],
+        gapH2,
+        _buildDataSection(context, repo),
         gapH8,
         _buildDonateSection(context, s.currency, isTablet),
       ],
@@ -123,6 +128,75 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+Widget _buildDataSection(BuildContext context, CarRepository repo) {
+  Future<void> onExport() async {
+    final bytes = await exportCsvBytes(repo);
+    final path = await FilePicker.saveFile(
+      fileName: kBackupFileName,
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+      bytes: bytes,
+    );
+    if (path != null && context.mounted) {
+      showStyledSnackbar(context, 'Saved to $path');
+    }
+  }
+
+  Future<void> onImport() async {
+    final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['csv']);
+    if (result == null || result.files.isEmpty) return;
+    final bytes = await File(result.files.single.path!).readAsBytes();
+    if (!context.mounted) return;
+    final confirmed = await showConfirmDelete(
+      context,
+      title: context.l10n.importCsv,
+      message: context.l10n.importConfirm,
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await importCsvBytes(repo, bytes);
+      if (!context.mounted) return;
+      if (context.mounted) context.read<CarListNotifier>().load();
+      showStyledSnackbar(context, context.l10n.importSuccess);
+    } catch (_) {
+      if (context.mounted) showStyledSnackbar(context, context.l10n.importError);
+    }
+  }
+
+  final column = Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      FormLabel(context.l10n.data),
+      gapH4,
+      Row(
+        children: [
+          Expanded(
+            child: SettingsItem(
+              key: const Key('export_csv'),
+              icon: '\u{1F4E4}',
+              title: context.l10n.exportCsv,
+              value: '',
+              onTap: onExport,
+            ),
+          ),
+          gapW10,
+          Expanded(
+            child: SettingsItem(
+              key: const Key('import_csv'),
+              icon: '\u{1F4E5}',
+              title: context.l10n.importCsv,
+              value: '',
+              onTap: onImport,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+
+  return column;
+}
+
 Widget _buildTabletSettings(BuildContext context, List<Widget> prefs) {
   final rows = List.generate((prefs.length + 1) ~/ 2, (i) {
     final j = i * 2;
@@ -130,7 +204,7 @@ Widget _buildTabletSettings(BuildContext context, List<Widget> prefs) {
     final second = j + 1 < prefs.length ? [gapW10, Expanded(child: prefs[j + 1])] : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Row(children: [first, if (second != null) ...second]),
+      child: Row(children: [first, ...?second]),
     );
   });
 
@@ -158,6 +232,7 @@ Widget _buildDonateSection(BuildContext context, String currency, [bool isTablet
   );
   return Column(
     children: [
+      gapH4,
       divider,
       gapH4,
       Column(
